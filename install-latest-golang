@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# Grab the latest go and replace the local version.
+# License: Zero-Clause BSD or Public Domain
+
+set -euo pipefail
+
+function install_latest() {
+    os="$(uname --kernel-name)"
+    [ "${os}" != "Linux" ] && echo "Error: os '${os}' is not implemented" && exit 1
+
+    arch="$(uname --machine)"
+    [ "${arch}" != "x86_64" ] && echo "Error: arch: '${arch}' is not implemented" && exit 1
+
+    machine="linux-amd64"
+
+    echo "Fetching latest go version"
+    version="$(curl -sL "https://go.dev/VERSION?m=text")"
+
+    installer="${version}.${machine}.tar.gz"
+    url="https://go.dev/dl/${installer}"
+    dir="$(mktemp --directory)"
+
+    echo "Downloading ${url} to ${dir}"
+    curl -L --progress-bar "${url}" --output "${dir}/${installer}"
+
+    echo "Installing ${version}..."
+    sudo tar -C /usr/local -xzf "${dir}/${installer}"
+
+    # Cleanup
+    trap '{ rm -rf -- "$dir"; }' EXIT
+
+    echo "Successfully installed to '/usr/local/go'"
+    echo ""
+    echo "You might need to update your PATH or open a new shell before running any go commands."
+}
+
+function upgrade_existing() {
+    os="$(go env GOOS)"
+    [ -z "$os" ] && echo "Warning: GOOS is empty; assuming linux" && os="linux"
+
+    arch="$(go env GOARCH)"
+    [ -z "$arch" ] && echo "Warning: GOARCH is empty; assuming amd64" && arch="amd64"
+
+    machine="${os}-${arch}"
+    echo "Fetching latest go version"
+    version="$(curl -sL "https://go.dev/VERSION?m=text")"
+
+    installed_version="$(go version | cut --fields 3 --delimiter ' ')"
+    if [[ "${version}" = "${installed_version}" ]]; then
+        echo "Already at latest version ($version)"
+        return
+    fi
+
+    installer="${version}.${machine}.tar.gz"
+    url="https://go.dev/dl/${installer}"
+    dir="$(mktemp --directory)"
+
+    echo "Downloading ${url} to ${dir}"
+    curl -L --progress-bar "${url}" --output "${dir}/${installer}"
+
+    echo "Installing ${version}..."
+    [ -d /usr/local/go ] && sudo rm -rf /usr/local/go
+
+    sudo tar -C /usr/local -xzf "${dir}/${installer}"
+
+    # Cleanup
+    trap '{ rm -rf -- "$dir"; }' EXIT
+}
+
+# Main
+if [[ -z "$(command -v go)" ]]; then
+    install_latest
+else
+    upgrade_existing
+fi
