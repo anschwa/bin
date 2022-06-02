@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+usage="Usage: compress-pdf SOURCE DEST"
+
+if [ "$#" -ne 2 ]
+then
+    echo "${usage}"
+    exit 1
+fi
+
+if ! [ -f "${1}" ]
+then
+    echo "Error: source file does not exist: ${1}"
+    echo "${usage}"
+    exit 1
+fi
+
+# Nothing special about different documents
+# might require different options or resolutions.
+gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+   -dPDFSETTINGS=/screen -dNOPAUSE -dQUIET -dBATCH \
+   -dColorImageResolution=100 -dGrayImageResolution=100 \
+   -dDetectDuplicateImage -dCompressFonts=true -r150 \
+   -sOutputFile="${2}" "${1}"
