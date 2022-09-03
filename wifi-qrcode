@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+usage="Usage: wifi-qrcode SSID PASS"
+
+if [ "$#" -ne 2 ]
+then
+    echo "${usage}"
+    exit 1
+fi
+
+if ! [ -x "$(command -v qrencode)" ]
+then
+    echo "Error: qrencode is not available"
+    exit 1
+fi
+
+qrencode -t svg -o wifi.svg "WIFI:T:WPA;S:${1};P:${2};;"
