@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+case "$(uname)" in
+    "Darwin")
+        [ -x "$(command -v osx-cpu-temp)" ] && osx-cpu-temp -C -c -g
+        ;;
+    *)
+        echo "Unrecognized OS"
+        ;;
+esac
