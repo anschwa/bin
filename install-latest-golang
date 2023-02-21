@@ -46,7 +46,7 @@ function upgrade_existing() {
     echo "Fetching latest go version"
     version="$(curl -sL "https://go.dev/VERSION?m=text")"
 
-    installed_version="$(go version | cut --fields 3 --delimiter ' ')"
+    installed_version="$(go version | cut -f 3 -d ' ')"
     if [[ "${version}" = "${installed_version}" ]]; then
         echo "Already at latest version ($version)"
         return
@@ -54,7 +54,7 @@ function upgrade_existing() {
 
     installer="${version}.${machine}.tar.gz"
     url="https://go.dev/dl/${installer}"
-    dir="$(mktemp --directory)"
+    dir="$(mktemp -d)"
 
     echo "Downloading ${url} to ${dir}"
     curl -L --progress-bar "${url}" --output "${dir}/${installer}"
