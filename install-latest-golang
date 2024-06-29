@@ -15,7 +15,7 @@ function install_latest() {
     machine="linux-amd64"
 
     echo "Fetching latest go version"
-    version="$(curl -sL "https://go.dev/VERSION?m=text")"
+    version="$(curl -sL "https://go.dev/VERSION?m=text" | head -1)"
 
     installer="${version}.${machine}.tar.gz"
     url="https://go.dev/dl/${installer}"
@@ -44,7 +44,7 @@ function upgrade_existing() {
 
     machine="${os}-${arch}"
     echo "Fetching latest go version"
-    version="$(curl -sL "https://go.dev/VERSION?m=text")"
+    version="$(curl -sL "https://go.dev/VERSION?m=text" | head -1)"
 
     installed_version="$(go version | cut -f 3 -d ' ')"
     if [[ "${version}" = "${installed_version}" ]]; then
